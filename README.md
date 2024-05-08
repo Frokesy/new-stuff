@@ -1,1 +1,1 @@
-## Go Tutorial and playground
+## Rehobothz admin panel
