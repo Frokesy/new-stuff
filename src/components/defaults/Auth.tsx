@@ -54,7 +54,7 @@ const Auth = () => {
               draggable: true,
             });
             setTimeout(() => {
-              window.location.href = "/home";
+              window.location.href = "/dashboard";
             }, 2000);
           } else {
             toast.error("Invalid username or password", {
