@@ -1,9 +1,45 @@
+import { useEffect, useState } from "react";
+import { supabase } from "../../../utils/supabaseClient";
 import MainContainer from "../../components/containers/MainContainer";
+import UserModal from "../../components/modals/UserModal";
+
+interface DataProps {
+  created_at: string;
+  email: string;
+  id: number;
+  name: string;
+  userId: string;
+}
 
 const Users = () => {
+  const [data, setData] = useState<DataProps[]>([]);
+  const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [selectedData, setSelectedData] = useState<DataProps>()
+
+
+  const handleClick = (item: DataProps) => {
+    setIsOpen(true)
+    setSelectedData(item)
+  }
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const { data: users, error } = await supabase.from("users").select("*");
+        if (error) {
+          throw error;
+        }
+        setData(users);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    fetchUsers();
+  }, []);
   return (
     <MainContainer active="users">
-      <div className="flex flex-col bg-white mt-4 w-[100%]">
+      <div className="flex flex-col bg-white mt-4 mx-10">
         <div className="">
           <div className=" w-full inline-block align-middle">
             <div className="overflow-x-auto border rounded-lg">
@@ -24,7 +60,7 @@ const Users = () => {
                     </th>
                     <th
                       scope="col"
-                      className="pr-6 py-3 lg:text-[14px] text-[10px] font-bold text-left text-gray-500 uppercase "
+                      className="px-6 py-3 lg:text-[14px] text-[10px] font-bold text-left text-gray-500 uppercase "
                     >
                       Mobile Number
                     </th>
@@ -36,55 +72,44 @@ const Users = () => {
                     </th>
                     <th
                       scope="col"
-                      className="px-6 py-3 lg:text-[14px] text-[10px] font-bold text-center text-gray-500 uppercase "
+                      className="px-6 py-3 lg:text-[14px] text-[10px] font-bold text-right text-gray-500 uppercase "
                     >
                       Date Joined
                     </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
-                  <tr className="cursor-pointer hover:text-[#3A5743] transition-all duration-500 ease-in-out text-[#8D9091] hover:text-semibold hover:bg-neutral-200">
-                    <td className="px-6 py-4 whitespace-nowrap lg:text-[14px] text-[12px]">
-                      635981586200289
-                    </td>
-                    <td className="pr-6 py-4 whitespace-nowrap lg:text-[14px] text-[12px]">
-                        Frokeslini Noah
-                    </td>
-                    <td className="px-6 py-4 lg:text-[14px] text-[12px] font-medium text-center whitespace-nowrap">
-                      +2349157881431
-                    </td>
-                    <td className="px-6 py-4 font-medium text-center whitespace-nowrap lg:text-[14px] text-[12px]">
-                      frokeslini@gmail.com
-                    </td>
-                    <td className="pr-6 py-4 lg:text-[14px] text-[12px] whitespace-nowrap">
-                      03/12/2022
-                    </td>
-                  </tr>
-                </tbody>
-                <tbody className="divide-y divide-gray-200">
-                  <tr className="cursor-pointer hover:text-[#3A5743] transition-all duration-500 ease-in-out text-[#8D9091] hover:text-semibold hover:bg-neutral-200">
-                    <td className="px-6 py-4 lg:text-[14px] text-[12px] whitespace-nowrap">
-                      635981586200289
-                    </td>
-                    <td className="pr-6 py-4 whitespace-nowrap lg:text-[14px] text-[12px]">
-                      Ayanfeoluwa Akindele
-                    </td>
-                    <td className="px-6 py-4 lg:text-[14px] text-[12px] font-medium text-center whitespace-nowrap">
-                      +2348148175713
-                    </td>
-                    <td className="px-6 py-4 font-medium text-center whitespace-nowrap lg:text-[14px] text-[12px]">
-                      frokeslini@gmail.com
-                    </td>
-                    <td className="pr-6 py-4 lg:text-[14px] text-[12px] whitespace-nowrap">
-                      03/12/2022
-                    </td>
-                  </tr>
+                  {data.map((item) => (
+                    <tr
+                      key={item.userId}
+                      onClick={() => handleClick(item)}
+                      className="cursor-pointer hover:text-[#3A5743] transition-all duration-500 ease-in-out text-[#8D9091] hover:text-semibold hover:bg-neutral-200"
+                    >
+                      <td className="px-6 py-4 whitespace-nowrap lg:text-[14px] text-[12px]">
+                        635981586200289
+                      </td>
+                      <td className="pr-6 py-4 whitespace-nowrap lg:text-[14px] text-[12px]">
+                        {item.name}
+                      </td>
+                      <td className="px-6 py-4 lg:text-[14px] text-[12px] font-medium text-left whitespace-nowrap">
+                        +2349157881431
+                      </td>
+                      <td className="px-6 py-4 font-medium text-center whitespace-nowrap lg:text-[14px] text-[12px]">
+                        {item.email}
+                      </td>
+                      <td className="pr-6 py-4 lg:text-[14px] text-[12px] text-right whitespace-nowrap">
+                        {new Date(item.created_at).toLocaleDateString()}
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
           </div>
         </div>
       </div>
+
+      {isOpen && <UserModal isOpen={isOpen} setIsOpen={setIsOpen} item={selectedData} />}
     </MainContainer>
   );
 };
