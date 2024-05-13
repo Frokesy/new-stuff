@@ -1,5 +1,6 @@
 import React, { FC } from "react";
 import SideNav from "../defaults/SideNav";
+import { easeInOut, motion } from "framer-motion";
 
 interface ContainerProps {
   children: React.ReactNode;
@@ -12,7 +13,15 @@ const MainContainer: FC<ContainerProps> = ({ children, active }) => {
       <div className="w-[20%]">
         <SideNav active={active} />
       </div>
-      <div className="w-[80%] pt-10 bg-[#f1f1f1]">{children}</div>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.5, ease: easeInOut }}
+        className="w-[80%] pt-10 bg-[#f1f1f1]"
+      >
+        {children}
+      </motion.div>
     </div>
   );
 };
