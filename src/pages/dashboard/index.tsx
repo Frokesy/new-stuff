@@ -1,11 +1,11 @@
 import MainContainer from "../../components/containers/MainContainer"
-import Card from "../../components/defaults/Card"
+import Cards from "../../components/defaults/Cards"
 
 const Dashboard = () => {
   return (
     <MainContainer active="dashboard">
-        <div className="w-[100%] border border-red-500">
-          <Card />
+        <div className="mx-10">
+          <Cards />
         </div>
     </MainContainer>
   )
