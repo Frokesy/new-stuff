@@ -9,11 +9,11 @@ const Dashboard = () => {
       <div className="mx-10">
         <Cards />
 
-        <div className="flex">
-          <div className="w-[50%] mt-10">
+        <div className="flex justify-between mt-10">
+          <div className="w-[50%]">
             <Graph />
           </div>
-          <div className="w-[30%]"><PieChart /></div>
+          <div className="w-[45%]"><PieChart /></div>
         </div>
       </div>
     </MainContainer>
