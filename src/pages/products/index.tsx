@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import MainContainer from "../../components/containers/MainContainer";
 
 const ProductsCatalogue = () => {
@@ -27,10 +27,29 @@ const ProductsCatalogue = () => {
       });
   };
 
+  const fetchAllProducts = async () => {
+    await fetch("http://localhost:4000/fetch-products", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((response) => {
+        return response.json();
+      })
+      .then((response) => {
+        console.log(response);
+      });
+  }
+
+  useEffect(() => {
+    fetchAllProducts()
+  }, [])
+
   return (
     <MainContainer active="products">
       <h2>Products Catalogue</h2>
-      <button className="create-produc" onClick={createProduct}>
+      <button className="create-product" onClick={createProduct}>
         Create Product
       </button>
     </MainContainer>
