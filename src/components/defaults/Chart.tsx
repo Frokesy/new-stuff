@@ -32,7 +32,7 @@ function Graph(): JSX.Element {
 
   return (
     <div className={`flex flex-col`}>
-      <div className="mb-10 flex justify-between bg-[#fff] rounded-lg py-2 px-4">
+      <div className="mb-10 flex justify-between bg-[#f1f1f1] rounded-lg py-2 px-4">
         <h2>Users on Rehobothz</h2>
         <div className="flex items-center space-x-3">
           <FaCalendarAlt color="#808080" />

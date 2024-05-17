@@ -26,7 +26,7 @@ const data = {
 const PieChart = () => {
   return (
     <div className="flex flex-col items-center">
-      <div className="mb-10 flex justify-between bg-[#fff] rounded-lg w-[100%] py-2 px-4">
+      <div className="mb-10 flex justify-between bg-[#f1f1f1] rounded-lg w-[100%] py-2 px-4">
         <h2>Top Performing Products</h2>
         <div className="flex items-center space-x-3">
           <FaCalendarAlt color="#808080" />

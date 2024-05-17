@@ -62,11 +62,11 @@ const Cards = () => {
         {CardContent.map((card, index) => (
           <div
             key={index}
-            className={`bg-white flex flex-col rounded-lg shadow-lg py-4 px-6 cursor-pointer hover:shadow-2xl duration-300 transition-all ease-in-out`}
+            className={`bg-[#f1f1f1] flex flex-col rounded-lg shadow-lg py-4 px-6 cursor-pointer hover:shadow-2xl duration-300 transition-all ease-in-out`}
           >
             <div className="flex">
               <h2
-                className="text-[32px] bg-[#f1f1f1] p-3 rounded-full"
+                className="text-[32px] bg-[#ccc] p-3 rounded-full"
                 style={{ color: card.color }}
               >
                 {card.icon}
