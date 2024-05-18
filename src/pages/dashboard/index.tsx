@@ -6,7 +6,7 @@ import PieChart from "../../components/defaults/PieChart";
 const Dashboard = () => {
   return (
     <MainContainer active="dashboard">
-      <div className="mx-10">
+      <div className="mx-10 pt-14">
         <Cards />
 
         <div className="flex justify-between mt-10">

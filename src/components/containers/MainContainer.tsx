@@ -18,7 +18,7 @@ const MainContainer: FC<ContainerProps> = ({ children, active }) => {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.5, ease: easeInOut }}
-        className="w-[80%] pt-10 bg-[#fff]"
+        className="w-[80%] bg-[#fff]"
       >
         {children}
       </motion.div>

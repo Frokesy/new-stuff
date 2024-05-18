@@ -39,7 +39,7 @@ const Users = () => {
   }, []);
   return (
     <MainContainer active="users">
-      <div className="flex flex-col bg-white mt-4 mx-10">
+      <div className="flex flex-col bg-white mx-10 pt-14">
         <div className="">
           <div className=" w-full inline-block align-middle">
             <div className="overflow-x-auto border rounded-lg">
