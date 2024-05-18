@@ -22,7 +22,8 @@ const ProductsCatalogue = () => {
   const [products, setProducts] = useState<ProductsProps[]>([]);
   const [prices, setPrices] = useState<{ [key: string]: number }>({});
   const [isOpen, setIsOpen] = useState<boolean>(false);
-  const [showAccordion, setShowAccordion] = useState<string>("");
+  const [showAccordion, setShowAccordion] = useState<boolean>(false);
+  const [accordionId, setAccordionId] = useState("");
 
   const formatDate = (unixTimestamp: number) => {
     const date = new Date(unixTimestamp * 1000);
@@ -70,7 +71,8 @@ const ProductsCatalogue = () => {
   }, []);
 
   const activateAccordion = (id: string) => {
-    setShowAccordion(id);
+    setShowAccordion(true);
+    setAccordionId(id);
   };
 
   return (
@@ -168,17 +170,19 @@ const ProductsCatalogue = () => {
                         <td className="py-4 lg:text-[14px] text-[12px] font-medium text-left whitespace-nowrap">
                           {item.active ? "active" : "inactive"}
                         </td>
-                        <td
-                          onClick={() => activateAccordion(item.id)}
-                          className="px-6 text-[#333] lg:text-[14px] text-[12px] text-left whitespace-nowrap"
-                        >
+                        <td className="px-6 text-[#333] lg:text-[14px] text-[12px] text-left whitespace-nowrap">
                           <div className="flex flex-col relative">
-                            <div className="flex space-x-1 justify-end">
+                            <div
+                              onClick={() => activateAccordion(item.id)}
+                              className="flex space-x-1 justify-end py-2 w-[10%] absolute right-0 -top-2"
+                            >
                               <FaCircle size={4} />
                               <FaCircle size={4} />
                               <FaCircle size={4} />
                             </div>
-                            {showAccordion === item.id && <ProductAccordion />}
+                            {showAccordion && accordionId === item.id && (
+                              <ProductAccordion item={item} />
+                            )}
                           </div>
                         </td>
                       </tr>

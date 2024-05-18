@@ -1,6 +1,47 @@
 import { motion } from "framer-motion";
+import { FC } from "react";
+import { ToastContainer, toast } from "react-toastify";
 
-const ProductAccordion = () => {
+interface ProductsProps {
+  active: boolean;
+  created: number;
+  default_price: string;
+  id: string;
+  images: object[];
+  livemode: false;
+  metadata: object;
+  name: string;
+  object: string;
+  type: string;
+  updated: string;
+}
+
+interface AccordionProps {
+  item: ProductsProps;
+}
+
+const ProductAccordion: FC<AccordionProps> = ({ item }) => {
+  const handleDelete = async () => {
+    await fetch("http://localhost:4000/delete-product", {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ item: item.id }),
+    })
+      .then((response) => response.json())
+      .then((response) => {
+        console.log(response);
+
+        toast.success("Product deleted!", {
+          position: "top-center",
+          theme: "light",
+          autoClose: 1500,
+          hideProgressBar: true,
+          draggable: true,
+        });
+      });
+  };
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -8,12 +49,20 @@ const ProductAccordion = () => {
       transition={{ duration: 0.3, ease: "easeInOut" }}
       className="absolute right-0 top-4 bg-[#fff] shadow-2xl w-[12vw] z-10"
     >
+      <ToastContainer />
       <div className="flex flex-col text-[14px]">
         <span className="text-[#635bff] font-semibold px-4 py-2 cursor-pointer hover:bg-[#ccc] hover:text-[#333] transition-all duration-300 ease-in-out">
           Edit Product
         </span>
-        <span className="text-[#635bff] font-semibold px-4 py-2 cursor-pointer hover:bg-[#ccc] hover:text-[#333] transition-all duration-300 ease-in-out">Archive Product</span>
-        <span className="text-[#ff0406] font-semibold px-4 py-2 cursor-pointer hover:bg-[#ccc] hover:text-[#333] transition-all duration-300 ease-in-out">Delete Product</span>
+        <span className="text-[#635bff] font-semibold px-4 py-2 cursor-pointer hover:bg-[#ccc] hover:text-[#333] transition-all duration-300 ease-in-out">
+          Archive Product
+        </span>
+        <span
+          onClick={handleDelete}
+          className="text-[#ff0406] font-semibold px-4 py-2 cursor-pointer hover:bg-[#ccc] hover:text-[#333] transition-all duration-300 ease-in-out"
+        >
+          Delete Product
+        </span>
       </div>
     </motion.div>
   );

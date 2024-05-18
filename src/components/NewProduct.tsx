@@ -73,7 +73,6 @@ const NewProduct: FC<NewProductProps> = ({ setIsOpen }) => {
 
     if (isNameValid && isPriceValid && isDescValid && error.image === "") {
       try {
-        console.log(product, "product");
         await fetch("http://localhost:4000/create-product", {
           method: "POST",
           headers: {
@@ -173,7 +172,7 @@ const NewProduct: FC<NewProductProps> = ({ setIsOpen }) => {
   };
 
   return (
-    <div className="absolute top-0 w-[100%] bg-opacity-60 bg-[#ccc] flex h-screen">
+    <div className="absolute top-0 w-[100%] bg-opacity-60 bg-[#ccc] flex h-screen z-50">
       <ToastContainer />
       <div className="w-[50%]"></div>
       <div className="bg-[#fff] w-[50%] px-10 pt-4 h-[100%] shadow-2xl">
