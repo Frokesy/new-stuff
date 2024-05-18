@@ -40,6 +40,7 @@ const Users = () => {
   return (
     <MainContainer active="users">
       <div className="flex flex-col bg-white mx-10 pt-14">
+      <h2 className="text-[30px] font-bold mb-6">Users</h2>
         <div className="">
           <div className=" w-full inline-block align-middle">
             <div className="overflow-x-auto border rounded-lg">

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import MainContainer from "../../components/containers/MainContainer";
 import { FaCircle, FaPlus, FaSquare } from "react-icons/fa";
 import NewProduct from "../../components/NewProduct";
+import ProductAccordion from "../../components/accordion/ProductAccordion";
 
 interface ProductsProps {
   active: boolean;
@@ -21,6 +22,7 @@ const ProductsCatalogue = () => {
   const [products, setProducts] = useState<ProductsProps[]>([]);
   const [prices, setPrices] = useState<{ [key: string]: number }>({});
   const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [showAccordion, setShowAccordion] = useState<string>("");
 
   const formatDate = (unixTimestamp: number) => {
     const date = new Date(unixTimestamp * 1000);
@@ -67,7 +69,9 @@ const ProductsCatalogue = () => {
     fetchPrices();
   }, []);
 
-  console.log(products);
+  const activateAccordion = (id: string) => {
+    setShowAccordion(id);
+  };
 
   return (
     <MainContainer active="products">
@@ -164,10 +168,18 @@ const ProductsCatalogue = () => {
                         <td className="py-4 lg:text-[14px] text-[12px] font-medium text-left whitespace-nowrap">
                           {item.active ? "active" : "inactive"}
                         </td>
-                        <td className="space-x-1 justify-end mt-6 px-6 text-[#333] flex lg:text-[14px] text-[12px] text-left whitespace-nowrap">
-                          <FaCircle size={4} />
-                          <FaCircle size={4} />
-                          <FaCircle size={4} />
+                        <td
+                          onClick={() => activateAccordion(item.id)}
+                          className="px-6 text-[#333] lg:text-[14px] text-[12px] text-left whitespace-nowrap"
+                        >
+                          <div className="flex flex-col relative">
+                            <div className="flex space-x-1 justify-end">
+                              <FaCircle size={4} />
+                              <FaCircle size={4} />
+                              <FaCircle size={4} />
+                            </div>
+                            {showAccordion === item.id && <ProductAccordion />}
+                          </div>
                         </td>
                       </tr>
                     ))}

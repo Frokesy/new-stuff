@@ -188,7 +188,7 @@ const NewProduct: FC<NewProductProps> = ({ setIsOpen }) => {
           </button>
         </div>
 
-        <div className="w-[60%] mt-10">
+        <div className="w-[80%] mt-10">
           <div className="flex flex-col w-[100%]">
             <label htmlFor="name" className="font-semibold">
               Name(required):
