@@ -21,13 +21,17 @@ interface AccordionProps {
 }
 
 const ProductAccordion: FC<AccordionProps> = ({ item }) => {
-  const handleDelete = async () => {
+    const handleDelete = async () => {
+      const ids = {
+          priceId: item.default_price,
+          productId: item.id
+      }
     await fetch("http://localhost:4000/delete-product", {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ item: item.id }),
+      body: JSON.stringify({ item: ids }),
     })
       .then((response) => response.json())
       .then((response) => {
@@ -42,6 +46,7 @@ const ProductAccordion: FC<AccordionProps> = ({ item }) => {
         });
       });
   };
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
