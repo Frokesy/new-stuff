@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "../../../utils/supabaseClient";
 import MainContainer from "../../components/containers/MainContainer";
 import UserModal from "../../components/modals/UserModal";
+import PageLoader from "../../components/defaults/PageLoader";
 
 interface DataProps {
   created_at: string;
@@ -15,6 +16,7 @@ const Users = () => {
   const [data, setData] = useState<DataProps[]>([]);
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [selectedData, setSelectedData] = useState<DataProps>()
+  const [loading, setLoading] = useState<boolean>(true);
 
 
   const handleClick = (item: DataProps) => {
@@ -29,6 +31,7 @@ const Users = () => {
         if (error) {
           throw error;
         }
+        setLoading(false)
         setData(users);
       } catch (error) {
         console.log(error);
@@ -41,7 +44,12 @@ const Users = () => {
     <MainContainer active="users">
       <div className="flex flex-col bg-white mx-10 pt-14">
       <h2 className="text-[30px] font-bold mb-6">Users</h2>
-        <div className="">
+        {loading ? (
+          <div className="h-[60vh]">
+            <PageLoader />
+          </div>
+        ) : (
+          <div className="">
           <div className=" w-full inline-block align-middle">
             <div className="overflow-x-auto border rounded-lg">
               <table className="min-w-full divide-y divide-gray-200 overflow-x-auto">
@@ -87,7 +95,7 @@ const Users = () => {
                       className="cursor-pointer hover:text-[#3A5743] transition-all duration-500 ease-in-out text-[#8D9091] hover:text-semibold hover:bg-neutral-200"
                     >
                       <td className="px-6 py-4 whitespace-nowrap lg:text-[14px] text-[12px]">
-                        635981586200289
+                        {item.userId.slice(0, 6)}
                       </td>
                       <td className="pr-6 py-4 whitespace-nowrap lg:text-[14px] text-[12px]">
                         {item.name}
@@ -108,6 +116,7 @@ const Users = () => {
             </div>
           </div>
         </div>
+        )}
       </div>
 
       {isOpen && <UserModal isOpen={isOpen} setIsOpen={setIsOpen} item={selectedData} />}

@@ -27,7 +27,7 @@ const ProductAccordion: FC<AccordionProps> = ({ item }) => {
           productId: item.id
       }
     await fetch("http://localhost:4000/delete-product", {
-      method: "DELETE",
+      method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
