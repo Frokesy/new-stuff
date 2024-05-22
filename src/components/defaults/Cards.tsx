@@ -1,44 +1,24 @@
+import { useEffect, useState } from "react";
 import { FaCheck, FaMoneyBill } from "react-icons/fa";
 import { FaPeopleGroup, FaShop } from "react-icons/fa6";
+import { supabase } from "../../../utils/supabaseClient";
+import PageLoader from "./PageLoader";
 
 const Cards = () => {
-  //   const fetchStatistics = () => {
-  //     fetch(`${baseUrl}/api/backoffice/statistics`, {
-  //       method: "GET",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //         Authorization: `Bearer ${sessionStorage.getItem("accessToken")}`,
-  //       },
-  //     })
-  //       .then((res) => res.json())
-  //       .then((data) => {
-  //         setStats(data.data);
-  //       });
-  //   };
-  //   useEffect(() => {
-  //     fetchStatistics();
-  //   }, []);
-
-  //   const numberWithCommas = (number) => {
-  //     const numericValue = Number(number);
-
-  //     if (!isNaN(numericValue)) {
-  //       return numericValue.toLocaleString();
-  //     } else {
-  //       return "0.00";
-  //     }
-  //   };
-
+  const [data, setData] = useState({
+    users: [],
+    products: [],
+  });
   const CardContent = [
     {
       title: "Total Products",
-      value: "35",
+      value: data.products.length,
       icon: <FaShop />,
       color: "#1B264F",
     },
     {
       title: "Total Users",
-      value: "2k+",
+      value: data.users.length,
       color: "#F7B32B",
       icon: <FaPeopleGroup />,
     },
@@ -55,6 +35,41 @@ const Cards = () => {
       color: "#34252F",
     },
   ];
+
+  const fetchAllProducts = async () => {
+    await fetch("http://localhost:4000/fetch-products", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((response) => response.json())
+      .then((productsData) => {
+        setData((prevState) => ({
+          ...prevState,
+          products: productsData,
+        }));
+      });
+  };
+
+  const fetchUsers = async () => {
+    try {
+      const { data: users, error } = await supabase.from("users").select("*");
+      if (error) {
+        throw error;
+      }
+      setData((prevState) => ({
+        ...prevState,
+        users: users as never[],
+      }));
+    } catch (error) {
+      console.error("Error fetching users:", error);
+    }
+  };
+  useEffect(() => {
+    fetchAllProducts();
+    fetchUsers();
+  }, []);
 
   return (
     <div className="w-[100%] mx-auto">
@@ -77,7 +92,7 @@ const Cards = () => {
                 style={{ color: card.color }}
                 className={`font-bold text-[30px]`}
               >
-                {card.value}
+                {card.value ? card.value : <PageLoader />}
               </h1>
               <h1 className="text-[#1B264F] font-bold text-[15px]">
                 {card.title}
