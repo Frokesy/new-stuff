@@ -23,6 +23,7 @@ const ProductsCatalogue = () => {
   const [products, setProducts] = useState<ProductsProps[]>([]);
   const [prices, setPrices] = useState<{ [key: string]: number }>({});
   const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [isEditActive, setEditActive] = useState<boolean>(false);
   const [showAccordion, setShowAccordion] = useState<boolean>(false);
   const [accordionId, setAccordionId] = useState("");
   const [loading, setLoading] = useState<boolean>(true);
@@ -78,6 +79,10 @@ const ProductsCatalogue = () => {
     setAccordionId(id);
   };
 
+  const activateProductEdit = (id: string) => {
+    console.log(id);
+    setEditActive(true);
+  };
   return (
     <MainContainer active="products">
       <div className="relative">
@@ -189,7 +194,7 @@ const ProductsCatalogue = () => {
                                 <FaCircle size={4} />
                               </div>
                               {showAccordion && accordionId === item.id && (
-                                <ProductAccordion item={item} />
+                                <ProductAccordion item={item} handleClick={activateProductEdit} />
                               )}
                             </div>
                           </td>
@@ -203,6 +208,7 @@ const ProductsCatalogue = () => {
           )}
         </div>
         {isOpen && <NewProduct setIsOpen={setIsOpen} />}
+        {isEditActive && <NewProduct setIsOpen={setEditActive} />}
       </div>
     </MainContainer>
   );
