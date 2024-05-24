@@ -18,7 +18,7 @@ interface ProductsProps {
 
 interface AccordionProps {
   item: ProductsProps;
-  handleClick: (id: string) => void;
+  handleClick: () => void;
 }
 
 const ProductAccordion: FC<AccordionProps> = ({ item, handleClick }) => {
@@ -60,7 +60,7 @@ const ProductAccordion: FC<AccordionProps> = ({ item, handleClick }) => {
         <ToastContainer />
         <div className="flex flex-col text-[14px]">
           <span
-            onClick={() => handleClick(item.id)}
+            onClick={() => handleClick()}
             className="text-[#635bff] font-semibold px-4 py-2 cursor-pointer hover:bg-[#ccc] hover:text-[#333] transition-all duration-300 ease-in-out"
           >
             Edit Product

@@ -17,10 +17,12 @@ interface ProductsProps {
   object: string;
   type: string;
   updated: string;
+  description: string;
 }
 
 const ProductsCatalogue = () => {
   const [products, setProducts] = useState<ProductsProps[]>([]);
+  const [editedProduct, setEditedProduct] = useState<ProductsProps>();
   const [prices, setPrices] = useState<{ [key: string]: number }>({});
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [isEditActive, setEditActive] = useState<boolean>(false);
@@ -32,7 +34,7 @@ const ProductsCatalogue = () => {
     const date = new Date(unixTimestamp * 1000);
 
     const year = date.getFullYear();
-    const month = (date.getMonth() + 1).toString().padStart(2, "0"); // Months are zero-indexed
+    const month = (date.getMonth() + 1).toString().padStart(2, "0");
     const day = date.getDate().toString().padStart(2, "0");
 
     return `${year}-${month}-${day}`;
@@ -79,8 +81,8 @@ const ProductsCatalogue = () => {
     setAccordionId(id);
   };
 
-  const activateProductEdit = (id: string) => {
-    console.log(id);
+  const activateProductEdit = () => {
+    setEditedProduct(products.find((item) => item.id === accordionId));
     setEditActive(true);
   };
   return (
@@ -208,7 +210,7 @@ const ProductsCatalogue = () => {
           )}
         </div>
         {isOpen && <NewProduct setIsOpen={setIsOpen} />}
-        {isEditActive && <NewProduct setIsOpen={setEditActive} />}
+        {isEditActive && <NewProduct isEditActive={isEditActive} setIsOpen={setEditActive} editedProduct={editedProduct} />}
       </div>
     </MainContainer>
   );
