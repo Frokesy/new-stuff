@@ -18,6 +18,7 @@ interface ProductsProps {
   type: string;
   updated: string;
   description: string;
+  category?: string;
 }
 
 const ProductsCatalogue = () => {
@@ -85,6 +86,8 @@ const ProductsCatalogue = () => {
     setEditedProduct(products.find((item) => item.id === accordionId));
     setEditActive(true);
   };
+
+  console.log(products)
   return (
     <MainContainer active="products">
       <div className="relative">
@@ -182,7 +185,7 @@ const ProductsCatalogue = () => {
                           <td className="py-4 lg:text-[14px] w-[10%] text-[12px] font-medium text-left whitespace-nowrap">
                             {formatDate(parseInt(item.updated))}
                           </td>
-                          <td className="py-4 lg:text-[14px] text-[12px] font-medium text-left whitespace-nowrap">
+                          <td className={`py-4 lg:text-[14px] text-[12px] font-medium text-left whitespace-nowrap ${item.active ? 'text-[#12e2a4]' : 'text-red-500'}`}>
                             {item.active ? "active" : "inactive"}
                           </td>
                           <td className="px-6 text-[#333] lg:text-[14px] text-[12px] text-left whitespace-nowrap">

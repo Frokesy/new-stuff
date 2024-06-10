@@ -2,6 +2,7 @@ import React, { FC, useEffect, useRef, useState } from "react";
 import { FaUpload } from "react-icons/fa";
 import { ToastContainer, toast } from "react-toastify";
 import Loader from "./defaults/Loader";
+import { supabase } from "../../utils/supabaseClient";
 
 interface ProductProps {
   active: boolean;
@@ -16,6 +17,7 @@ interface ProductProps {
   type: string;
   updated: string;
   description: string;
+  category?: string;
 }
 
 interface NewProductProps {
@@ -34,6 +36,7 @@ const NewProduct: FC<NewProductProps> = ({
     active: true,
     description: "",
     price: "",
+    category: "",
   });
 
   const [error, setError] = useState({
@@ -41,6 +44,7 @@ const NewProduct: FC<NewProductProps> = ({
     description: "",
     price: "",
     image: "",
+    category: "",
   });
 
   const [loading, setLoading] = useState<boolean>(false);
@@ -72,6 +76,7 @@ const NewProduct: FC<NewProductProps> = ({
   const isNameValid = validateField(data.name);
   const isDescValid = validateField(data.description);
   const isPriceValid = validateField(data.price);
+  const isCategoryValid = validateField(data.category);
 
   const createProduct = async () => {
     setLoading(true);
@@ -80,6 +85,7 @@ const NewProduct: FC<NewProductProps> = ({
       description: isDescValid ? "" : "Field is required",
       price: isPriceValid ? "" : "Price must be set",
       image: "",
+      category: isCategoryValid ? "" : "Category must be set",
     });
 
     const product = {
@@ -103,8 +109,27 @@ const NewProduct: FC<NewProductProps> = ({
           body: JSON.stringify({ items: product }),
         })
           .then((response) => response.json())
-          .then((response) => {
-            console.log(response);
+          .then(async (response) => {
+            if (response) {
+              const { data: product, error: productError } = await supabase
+                .from("products")
+                .insert([
+                  {
+                    name: data.name,
+                    active: true,
+                    desc: data.description,
+                    default_price: parseInt(data.price),
+                    image: pic,
+                    category: data.category
+                  },
+                ]);
+              if (!productError) {
+                console.log("Product added to supabase", product);
+              } else {
+                console.log("error", productError);
+              }
+            }
+
             setLoading(false);
 
             toast.success("Product added successfully!", {
@@ -141,6 +166,11 @@ const NewProduct: FC<NewProductProps> = ({
         }, 3000);
       }
       if (!isPriceValid) {
+        setTimeout(() => {
+          setError((prevState) => ({ ...prevState, price: "" }));
+        }, 3000);
+      }
+      if (!isCategoryValid) {
         setTimeout(() => {
           setError((prevState) => ({ ...prevState, price: "" }));
         }, 3000);
@@ -235,6 +265,7 @@ const NewProduct: FC<NewProductProps> = ({
       description: isDescValid ? "" : "Field is required",
       price: isPriceValid ? "" : "Price must be set",
       image: "",
+      category: isCategoryValid ? "" : "Category must be set",
     });
 
     const product = {
@@ -299,148 +330,182 @@ const NewProduct: FC<NewProductProps> = ({
           setError((prevState) => ({ ...prevState, price: "" }));
         }, 3000);
       }
+      if (!isCategoryValid) {
+        setTimeout(() => {
+          setError((prevState) => ({ ...prevState, category: "" }));
+        }, 3000);
+      }
     }
   };
 
   useEffect(() => {
     getPrice();
   }, []);
-  
+
   return (
     <div className="absolute top-0 w-[100%] bg-opacity-60 bg-[#ccc] flex h-screen z-50">
       <ToastContainer />
       <div className="w-[50%]"></div>
       <div className="bg-[#fff] w-[50%] px-10 pt-4 h-[100%] shadow-2xl">
-        <div className="flex justify-between border-b border-[#808080] pb-4">
-          <h2 className="text-[20px] font-semibold">
-            {isEditActive ? "Update Product" : "Create New Product"}
-          </h2>
-          <button
-            onClickCapture={() => setIsOpen(false)}
-            className="border border-[#333] px-3 py-1 text-[14px] rounded-lg"
-            onClick={() => setIsOpen(false)}
-          >
-            Close
-          </button>
-        </div>
-
-        <div className="w-[80%] mt-10">
-          <div className="flex flex-col w-[100%]">
-            <label htmlFor="name" className="font-semibold">
-              Name{!isEditActive && "(required)"}:
-            </label>
-            <span className="text-[12px] text-[#404040] pb-3">
-              Name of the product or service, visible to customers.
-            </span>
-            <input
-              type="text"
-              id="name"
-              placeholder={editedProduct ? editedProduct.name : ""}
-              value={data.name}
-              onChange={(e) => setData({ ...data, name: e.target.value })}
-              className={`outline-none border border-[#ccc] w-[100%] rounded-lg py-2 px-3 ${
-                error.name && "border-red-500"
-              }`}
-            />
-            <span className="text-red-500 text-[10px] italic">
-              {error.name}
-            </span>
+        <div className="h-[95vh] overflow-y-auto">
+          <div className="flex justify-between border-b border-[#808080] pb-4">
+            <h2 className="text-[20px] font-semibold">
+              {isEditActive ? "Update Product" : "Create New Product"}
+            </h2>
+            <button
+              onClickCapture={() => setIsOpen(false)}
+              className="border border-[#333] px-3 py-1 text-[14px] rounded-lg"
+              onClick={() => setIsOpen(false)}
+            >
+              Close
+            </button>
           </div>
 
-          <div className="flex flex-col w-[100%] mt-6">
-            <label htmlFor="name" className="font-semibold">
-              Description{!isEditActive && "(required)"}:
-            </label>
-            <span className="text-[12px] pb-3 text-[#404040]">
-              Appears at checkout, on the customer portal, and in quotes.
-            </span>
-            <textarea
-              id="desc"
-              placeholder={editedProduct ? editedProduct.description : ""}
-              value={data.description}
-              onChange={(e) =>
-                setData({ ...data, description: e.target.value })
-              }
-              className={`outline-none border border-[#ccc] w-[100%] rounded-lg py-2 px-3 ${
-                error.description && "border-red-500"
-              }`}
-            />
-            <span className="text-red-500 text-[10px] italic">
-              {error.description}
-            </span>
-          </div>
-
-          {!isEditActive && (
-            <div className="flex flex-col w-[100%] mt-6">
+          <div className="w-[80%] mt-10">
+            <div className="flex flex-col w-[100%]">
               <label htmlFor="name" className="font-semibold">
-                Image:
+                Name{!isEditActive && "(required)"}:
               </label>
-              <span className="text-[12px] pb-3 text-[#404040]">
-                Appears at checkout and customer portal, JPEG or PNG under 2MB.
+              <span className="text-[12px] text-[#404040] pb-3">
+                Name of the product or service, visible to customers.
               </span>
-
               <input
-                type="file"
-                ref={fileInputRef}
-                onChange={handleFileChange}
-                className="hidden"
+                type="text"
+                id="name"
+                placeholder={editedProduct ? editedProduct.name : ""}
+                value={data.name}
+                onChange={(e) => setData({ ...data, name: e.target.value })}
+                className={`outline-none border border-[#ccc] w-[100%] rounded-lg py-2 px-3 ${
+                  error.name && "border-red-500"
+                }`}
               />
-              <button
-                type="button"
-                onClick={handleButtonClick}
-                className="text-[#333] font-semibold flex items-center text-[14px] border border-[#ccc] w-[30%] justify-center py-1 space-x-2 rounded-lg"
-              >
-                <FaUpload />
-                <span>Upload</span>
-              </button>
               <span className="text-red-500 text-[10px] italic">
-                {error.image}
-              </span>
-              <span className="text-[#7ea405] mt-1 text-[14px] italic">
-                {pic.slice(0, 20) + "..."}
+                {error.name}
               </span>
             </div>
-          )}
 
-          <div className="flex flex-col w-[100%] mt-6">
-            <label htmlFor="name" className="font-semibold mb-3">
-              Amount{!isEditActive && "(required)"}[£]:
-            </label>
-            <input
-              type="number"
-              id="price"
-              placeholder={
-                editedProduct
-                  ? `${(prices[editedProduct.default_price] / 100).toFixed(2)}`
-                  : ""
-              }
-              value={data.price}
-              onChange={(e) => setData({ ...data, price: e.target.value })}
-              className={`outline-none border border-[#ccc] w-[100%] rounded-lg py-2 px-3 ${
-                error.price && "border-red-500"
-              }`}
-            />
-            <span className="text-red-500 text-[10px] italic">
-              {error.price}
-            </span>
-          </div>
+            <div className="flex flex-col w-[100%] mt-6">
+              <label htmlFor="name" className="font-semibold">
+                Description{!isEditActive && "(required)"}:
+              </label>
+              <span className="text-[12px] pb-3 text-[#404040]">
+                Appears at checkout, on the customer portal, and in quotes.
+              </span>
+              <textarea
+                id="desc"
+                placeholder={editedProduct ? editedProduct.description : ""}
+                value={data.description}
+                onChange={(e) =>
+                  setData({ ...data, description: e.target.value })
+                }
+                className={`outline-none border border-[#ccc] w-[100%] rounded-lg py-2 px-3 ${
+                  error.description && "border-red-500"
+                }`}
+              />
+              <span className="text-red-500 text-[10px] italic">
+                {error.description}
+              </span>
+            </div>
 
-          <div className="flex justify-end mt-6">
-            {isEditActive ? (
-              <button
-                onClick={updateProduct}
-                className="bg-[#19483a] text-[#fff] text-[14px] flex justify-center items-center h-[35px] w-[150px] rounded-lg font-semibold"
-              >
-                {loading ? <Loader /> : "Update Product"}
-              </button>
-            ) : (
-              <button
-                onClick={createProduct}
-                className="bg-[#19483a] text-[#fff] text-[14px] flex justify-center items-center h-[35px] w-[110px] rounded-lg font-semibold"
-              >
-                {loading ? <Loader /> : "Add Product"}
-              </button>
+            <div className="flex flex-col w-[100%] mt-6">
+              <label htmlFor="name" className="font-semibold">
+                Category{!isEditActive && "(required)"}:
+              </label>
+              <span className="text-[12px] text-[#404040] pb-3">
+                Defines which category the product will be placed.
+              </span>
+              <input
+                type="text"
+                id="category"
+                placeholder={
+                  editedProduct ? editedProduct.category : "e.g cereals, fruits"
+                }
+                value={data.category}
+                onChange={(e) => setData({ ...data, category: e.target.value })}
+                className={`outline-none border border-[#ccc] w-[100%] rounded-lg py-2 px-3 ${
+                  error.category && "border-red-500"
+                }`}
+              />
+              <span className="text-red-500 text-[10px] italic">
+                {error.category}
+              </span>
+            </div>
+
+            {!isEditActive && (
+              <div className="flex flex-col w-[100%] mt-6">
+                <label htmlFor="name" className="font-semibold">
+                  Image:
+                </label>
+                <span className="text-[12px] pb-3 text-[#404040]">
+                  Appears at checkout and customer portal, JPEG or PNG under
+                  2MB.
+                </span>
+
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+                <button
+                  type="button"
+                  onClick={handleButtonClick}
+                  className="text-[#333] font-semibold flex items-center text-[14px] border border-[#ccc] w-[30%] justify-center py-1 space-x-2 rounded-lg"
+                >
+                  <FaUpload />
+                  <span>Upload</span>
+                </button>
+                <span className="text-red-500 text-[10px] italic">
+                  {error.image}
+                </span>
+                <span className="text-[#7ea405] mt-1 text-[14px] italic">
+                  {pic.slice(0, 20) + "..."}
+                </span>
+              </div>
             )}
+
+            <div className="flex flex-col w-[100%] mt-6">
+              <label htmlFor="name" className="font-semibold mb-3">
+                Amount{!isEditActive && "(required)"}[£]:
+              </label>
+              <input
+                type="number"
+                id="price"
+                placeholder={
+                  editedProduct
+                    ? `${(prices[editedProduct.default_price] / 100).toFixed(
+                        2
+                      )}`
+                    : ""
+                }
+                value={data.price}
+                onChange={(e) => setData({ ...data, price: e.target.value })}
+                className={`outline-none border border-[#ccc] w-[100%] rounded-lg py-2 px-3 ${
+                  error.price && "border-red-500"
+                }`}
+              />
+              <span className="text-red-500 text-[10px] italic">
+                {error.price}
+              </span>
+            </div>
+
+            <div className="flex justify-end mt-6">
+              {isEditActive ? (
+                <button
+                  onClick={updateProduct}
+                  className="bg-[#19483a] text-[#fff] text-[14px] flex justify-center items-center h-[35px] w-[150px] rounded-lg font-semibold"
+                >
+                  {loading ? <Loader /> : "Update Product"}
+                </button>
+              ) : (
+                <button
+                  onClick={createProduct}
+                  className="bg-[#19483a] text-[#fff] text-[14px] flex justify-center items-center h-[35px] w-[110px] rounded-lg font-semibold"
+                >
+                  {loading ? <Loader /> : "Add Product"}
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>
