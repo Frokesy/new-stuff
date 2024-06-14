@@ -87,7 +87,6 @@ const ProductsCatalogue = () => {
     setEditActive(true);
   };
 
-  console.log(products)
   return (
     <MainContainer active="products">
       <div className="relative">

@@ -120,6 +120,7 @@ const NewProduct: FC<NewProductProps> = ({
                     desc: data.description,
                     default_price: parseInt(data.price),
                     image: pic,
+                    priceId: response.default_price,
                     category: data.category
                   },
                 ]);
