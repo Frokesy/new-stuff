@@ -4,11 +4,25 @@ import { FaPeopleGroup, FaShop } from "react-icons/fa6";
 import { supabase } from "../../../utils/supabaseClient";
 import PageLoader from "./PageLoader";
 
+interface OrderProps {
+  id: number;
+  products: string[];
+  session_id: string;
+  status: string;
+  totalCost: string;
+  user_id: string
+}
+
+
 const Cards = () => {
   const [data, setData] = useState({
     users: [],
     products: [],
+    totalOrders: [] as OrderProps[],
+    completedOrders: [] as OrderProps[]
   });
+  const totalRevenue = data.completedOrders.reduce((sum, order) => sum + parseInt(order.totalCost), 0);
+  
   const CardContent = [
     {
       title: "Total Products",
@@ -24,33 +38,56 @@ const Cards = () => {
     },
     {
       title: "Total Revenue",
-      value: `$6k+`,
+      value: `£${totalRevenue}`,
       icon: <FaMoneyBill />,
       color: "#1c9772",
     },
     {
-      title: "Orders Completed",
-      value: "65",
+      title: "Orders (Completed)",
+      value: `${data.totalOrders.length} (${data.completedOrders.length})`,
       icon: <FaCheck />,
       color: "#34252F",
     },
   ];
 
+
   const fetchAllProducts = async () => {
-    await fetch("http://localhost:4000/fetch-products", {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-      .then((response) => response.json())
-      .then((productsData) => {
-        setData((prevState) => ({
-          ...prevState,
-          products: productsData,
-        }));
-      });
+    try {
+      const { data: products, error } = await supabase.from("products").select("*");
+      if (error) {
+        throw error;
+      }
+      setData((prevState) => ({
+        ...prevState,
+        products: products as never[],
+      }));
+    } catch (error) {
+      console.error("Error fetching Products:", error);
+    }
   };
+
+  const fetchOrders = async () => {
+    try {
+      const { data: orders, error } = await supabase.from("orders").select("*");
+      if (error) {
+        throw error;
+      }
+
+      const completedOrders = orders.filter(order => order.status === "completed");
+
+      setData((prevState) => ({
+        ...prevState,
+        completedOrders: completedOrders as OrderProps[],
+      }));
+
+      setData((prevState) => ({
+        ...prevState,
+        totalOrders: orders as OrderProps[],
+      }));
+    } catch (error) {
+      console.error("Error fetching Orders:", error);
+    }
+  }
 
   const fetchUsers = async () => {
     try {
@@ -68,6 +105,7 @@ const Cards = () => {
   };
   useEffect(() => {
     fetchAllProducts();
+    fetchOrders();
     fetchUsers();
   }, []);
 
