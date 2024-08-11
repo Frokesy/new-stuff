@@ -22,6 +22,7 @@ const LogoutModal: FC<ModalProps> = ({ isOpen, setIsOpen }) => {
     if (!error) {
       setLoading(false);
       setIsOpen(!isOpen);
+      localStorage.removeItem("id");
       navigate("/");
     }
   };

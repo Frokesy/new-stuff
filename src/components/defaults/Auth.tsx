@@ -53,6 +53,8 @@ const Auth = () => {
               hideProgressBar: true,
               draggable: true,
             });
+            const id = user.id;
+            localStorage.setItem("id", id);
             setTimeout(() => {
               window.location.href = "/dashboard";
             }, 2000);

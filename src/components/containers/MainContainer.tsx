@@ -1,4 +1,5 @@
-import React, { FC, useState } from "react";
+import React, { FC, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import SideNav from "../defaults/SideNav";
 import { easeInOut, motion } from "framer-motion";
 import LogoutModal from "../modals/LogoutModal";
@@ -10,6 +11,14 @@ interface ContainerProps {
 
 const MainContainer: FC<ContainerProps> = ({ children, active }) => {
   const [showLogoutModal, setShowLogoutModal] = useState<boolean>(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const id = localStorage.getItem("id");
+    if (!id) {
+      navigate("/");
+    }
+  }, [navigate]);
 
   const logout = () => {
     setShowLogoutModal(true);
