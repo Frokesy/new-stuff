@@ -19,7 +19,6 @@ interface ProductsProps {
   updated: string;
   description: string;
   category?: string;
-  deliveryEstimateDays: number;
 }
 
 const ProductsCatalogue = () => {
@@ -69,26 +68,8 @@ const ProductsCatalogue = () => {
       .then((response) => response.json())
       .then((productsData) => {
         setLoading(false);
-        const productsWithEstimates = productsData.map(
-          (product: ProductsProps) => ({
-            ...product,
-            deliveryEstimateDays: product.deliveryEstimateDays || 5,
-          })
-        );
-        setProducts(productsWithEstimates);
+        setProducts(productsData);
       });
-  };
-
-  const calculateDeliveryDate = (estimateDays: number) => {
-    const orderDate = new Date();
-    const deliveryDate = new Date(orderDate);
-    deliveryDate.setDate(orderDate.getDate() + estimateDays);
-
-    const year = deliveryDate.getFullYear();
-    const month = (deliveryDate.getMonth() + 1).toString().padStart(2, "0");
-    const day = deliveryDate.getDate().toString().padStart(2, "0");
-
-    return `${year}-${month}-${day}`;
   };
 
   useEffect(() => {
@@ -163,12 +144,6 @@ const ProductsCatalogue = () => {
                           scope="col"
                           className="lg:text-[14px] text-[10px] font-bold text-left text-gray-500"
                         >
-                          Estimated Delivery Date
-                        </th>
-                        <th
-                          scope="col"
-                          className="lg:text-[14px] text-[10px] font-bold text-left text-gray-500"
-                        >
                           Status
                         </th>
                       </tr>
@@ -209,15 +184,8 @@ const ProductsCatalogue = () => {
                           <td className="py-4 lg:text-[14px] w-[10%] text-[12px] font-medium text-left whitespace-nowrap">
                             {formatDate(parseInt(item.updated))}
                           </td>
-                          <td
-                            className={`py-4 lg:text-[14px] text-[12px] font-medium text-left whitespace-nowrap ${
-                              item.active ? "text-[#12e2a4]" : "text-red-500"
-                            }`}
-                          >
+                          <td className={`py-4 lg:text-[14px] text-[12px] font-medium text-left whitespace-nowrap ${item.active ? 'text-[#12e2a4]' : 'text-red-500'}`}>
                             {item.active ? "active" : "inactive"}
-                          </td>
-                          <td className="py-4 lg:text-[14px] w-[10%] text-[12px] font-medium whitespace-nowrap">
-                            {calculateDeliveryDate(item.deliveryEstimateDays)}
                           </td>
                           <td className="px-6 text-[#333] lg:text-[14px] text-[12px] text-left whitespace-nowrap">
                             <div className="flex flex-col relative">
@@ -230,10 +198,7 @@ const ProductsCatalogue = () => {
                                 <FaCircle size={4} />
                               </div>
                               {showAccordion && accordionId === item.id && (
-                                <ProductAccordion
-                                  item={item}
-                                  handleClick={activateProductEdit}
-                                />
+                                <ProductAccordion item={item} handleClick={activateProductEdit} />
                               )}
                             </div>
                           </td>
@@ -247,13 +212,7 @@ const ProductsCatalogue = () => {
           )}
         </div>
         {isOpen && <NewProduct setIsOpen={setIsOpen} />}
-        {isEditActive && (
-          <NewProduct
-            isEditActive={isEditActive}
-            setIsOpen={setEditActive}
-            editedProduct={editedProduct}
-          />
-        )}
+        {isEditActive && <NewProduct isEditActive={isEditActive} setIsOpen={setEditActive} editedProduct={editedProduct} />}
       </div>
     </MainContainer>
   );
