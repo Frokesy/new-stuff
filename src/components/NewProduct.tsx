@@ -18,6 +18,7 @@ interface ProductProps {
   updated: string;
   description: string;
   category?: string;
+  estimatedDeliveryDays: number;
 }
 
 interface NewProductProps {
@@ -37,6 +38,7 @@ const NewProduct: FC<NewProductProps> = ({
     description: "",
     price: "",
     category: "",
+    estimatedDeliveryDays: "",
   });
 
   const [error, setError] = useState({
@@ -45,6 +47,7 @@ const NewProduct: FC<NewProductProps> = ({
     price: "",
     image: "",
     category: "",
+    estimatedDeliveryDays: "",
   });
 
   const [loading, setLoading] = useState<boolean>(false);
@@ -77,6 +80,7 @@ const NewProduct: FC<NewProductProps> = ({
   const isDescValid = validateField(data.description);
   const isPriceValid = validateField(data.price);
   const isCategoryValid = validateField(data.category);
+  const isDeliveryInputValid = validateField(data.estimatedDeliveryDays);
 
   const createProduct = async () => {
     setLoading(true);
@@ -86,6 +90,9 @@ const NewProduct: FC<NewProductProps> = ({
       price: isPriceValid ? "" : "Price must be set",
       image: "",
       category: isCategoryValid ? "" : "Category must be set",
+      estimatedDeliveryDays: isDeliveryInputValid
+        ? ""
+        : "Estimated delivery days must be set",
     });
 
     const product = {
@@ -121,7 +128,8 @@ const NewProduct: FC<NewProductProps> = ({
                     default_price: parseInt(data.price),
                     image: pic,
                     priceId: response.default_price,
-                    category: data.category
+                    category: data.category,
+                    estimatedDeliveryDays: data.estimatedDeliveryDays,
                   },
                 ]);
               if (!productError) {
@@ -174,6 +182,14 @@ const NewProduct: FC<NewProductProps> = ({
       if (!isCategoryValid) {
         setTimeout(() => {
           setError((prevState) => ({ ...prevState, price: "" }));
+        }, 3000);
+      }
+      if (!isDeliveryInputValid) {
+        setTimeout(() => {
+          setError((prevState) => ({
+            ...prevState,
+            estimatedDeliveryDays: "",
+          }));
         }, 3000);
       }
     }
@@ -244,31 +260,6 @@ const NewProduct: FC<NewProductProps> = ({
   const updateProduct = async () => {
     setLoading(true);
 
-    // if (data.price !== "") {
-    //   const updatedPrice = {
-    //     id: editedProduct?.default_price,
-    //     unit_amount: parseInt(data.price) * 100,
-    //   }
-    //   await fetch("http://localhost:4000/update-price", {
-    //     method: "POST",
-    //     headers: {
-    //       "Content-type": "application/json",
-    //     },
-    //     body: JSON.stringify({ item: updatedPrice }),
-    //   })
-    //     .then((response) => response.json())
-    //     .then((response) => {
-    //       console.log(response);
-    //     });
-    // }
-    setError({
-      name: isNameValid ? "" : "Field is required",
-      description: isDescValid ? "" : "Field is required",
-      price: isPriceValid ? "" : "Price must be set",
-      image: "",
-      category: isCategoryValid ? "" : "Category must be set",
-    });
-
     const product = {
       id: editedProduct?.id,
       name: data.name ? data.name : editedProduct?.name,
@@ -276,66 +267,63 @@ const NewProduct: FC<NewProductProps> = ({
       description: data.description
         ? data.description
         : editedProduct?.description,
-      // default_price: updatedPrice,
     };
 
-    if (isNameValid && isPriceValid && isDescValid && error.image === "") {
-      try {
-        await fetch("http://localhost:4000/update-product", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ items: product }),
-        })
-          .then((response) => response.json())
-          .then((response) => {
-            console.log(response);
-            setLoading(false);
+    try {
+      await fetch("http://localhost:4000/update-product", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ items: product }),
+      })
+        .then((response) => response.json())
+        .then(async (response) => {
+          if (response) {
+            const { data: product, error: productError } = await supabase
+              .from("products")
+              .update([
+                {
+                  name: data.name ? data.name : editedProduct?.name,
+                  active: true,
+                  desc: data.description
+                    ? data.description
+                    : editedProduct?.description,
+                  category: data.category
+                    ? data.category
+                    : editedProduct?.category,
+                },
+              ])
+              .eq("id", editedProduct?.id);
+            if (!productError) {
+              console.log("Product updated", product);
+            } else {
+              console.log("error", productError);
+            }
+          }
 
-            toast.success("Product updated successfully!", {
-              position: "top-center",
-              theme: "light",
-              autoClose: 1500,
-              hideProgressBar: true,
-              draggable: true,
-            });
-            setTimeout(() => {
-              setIsOpen(false);
-            }, 3000);
+          setLoading(false);
+
+          toast.success("Product updated successfully!", {
+            position: "top-center",
+            theme: "light",
+            autoClose: 1500,
+            hideProgressBar: true,
+            draggable: true,
           });
-      } catch (error) {
-        toast.error(error as string, {
-          position: "top-center",
-          theme: "light",
-          autoClose: 2000,
-          hideProgressBar: true,
-          draggable: true,
+          setTimeout(() => {
+            setIsOpen(false);
+          }, 3000);
         });
-        setLoading(false);
-      }
-    } else {
+    } catch (error) {
+      toast.error(error as string, {
+        position: "top-center",
+        theme: "light",
+        autoClose: 2000,
+        hideProgressBar: true,
+        draggable: true,
+      });
       setLoading(false);
-      if (!isNameValid) {
-        setTimeout(() => {
-          setError((prevState) => ({ ...prevState, name: "" }));
-        }, 3000);
-      }
-      if (!isDescValid) {
-        setTimeout(() => {
-          setError((prevState) => ({ ...prevState, description: "" }));
-        }, 3000);
-      }
-      if (!isPriceValid) {
-        setTimeout(() => {
-          setError((prevState) => ({ ...prevState, price: "" }));
-        }, 3000);
-      }
-      if (!isCategoryValid) {
-        setTimeout(() => {
-          setError((prevState) => ({ ...prevState, category: "" }));
-        }, 3000);
-      }
     }
   };
 
@@ -489,6 +477,38 @@ const NewProduct: FC<NewProductProps> = ({
                 {error.price}
               </span>
             </div>
+
+            {!isEditActive && (
+              <div className="flex flex-col w-[100%] mt-6">
+                <label htmlFor="name" className="font-semibold">
+                  Estimated Delivery Days (required):
+                </label>
+                <span className="text-[12px] text-[#404040] pb-3">
+                  Specifies how long it&apos;ll take for the product to be
+                  delivered from the day it was ordered.
+                </span>
+                <input
+                  type="number"
+                  id="deliveryDays"
+                  placeholder={
+                    editedProduct
+                      ? editedProduct.estimatedDeliveryDays.toString()
+                      : "e.g 5 (days)"
+                  }
+                  value={data.estimatedDeliveryDays}
+                  onChange={(e) =>
+                    setData({ ...data, estimatedDeliveryDays: e.target.value })
+                  }
+                  className={`outline-none border border-[#ccc] w-[100%] rounded-lg py-2 px-3 ${
+                    error.estimatedDeliveryDays && "border-red-500"
+                  }`}
+                />
+
+                <span className="text-red-500 text-[10px] italic">
+                  {error.estimatedDeliveryDays}
+                </span>
+              </div>
+            )}
 
             <div className="flex justify-end mt-6">
               {isEditActive ? (

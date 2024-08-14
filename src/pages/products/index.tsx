@@ -19,6 +19,7 @@ interface ProductsProps {
   updated: string;
   description: string;
   category?: string;
+  estimatedDeliveryDays: number
 }
 
 const ProductsCatalogue = () => {
