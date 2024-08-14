@@ -128,6 +128,7 @@ const NewProduct: FC<NewProductProps> = ({
                     default_price: parseInt(data.price),
                     image: pic,
                     priceId: response.default_price,
+                    productId: response.id,
                     category: data.category,
                     estimatedDeliveryDays: data.estimatedDeliveryDays,
                   },
@@ -294,7 +295,7 @@ const NewProduct: FC<NewProductProps> = ({
                     : editedProduct?.category,
                 },
               ])
-              .eq("id", editedProduct?.id);
+              .eq("productId", editedProduct?.id);
             if (!productError) {
               console.log("Product updated", product);
             } else {
