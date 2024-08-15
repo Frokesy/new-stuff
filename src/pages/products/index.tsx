@@ -10,6 +10,7 @@ interface ProductsProps {
   active: boolean;
   created_at: number;
   default_price: string;
+  productId: string;
   id: string;
   image: string;
   livemode: false;
@@ -205,12 +206,13 @@ const ProductsCatalogue = () => {
             </div>
           )}
         </div>
-        {isOpen && <NewProduct setIsOpen={setIsOpen} />}
+        {isOpen && <NewProduct fetchAllProducts={fetchAllProducts} setIsOpen={setIsOpen} />}
         {isEditActive && (
           <NewProduct
             isEditActive={isEditActive}
             setIsOpen={setEditActive}
             editedProduct={editedProduct}
+            fetchAllProducts={fetchAllProducts}
           />
         )}
       </div>

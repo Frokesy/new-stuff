@@ -1,4 +1,4 @@
-import React, { FC, useEffect, useRef, useState } from "react";
+import React, { FC, useRef, useState } from "react";
 import { FaUpload } from "react-icons/fa";
 import { ToastContainer, toast } from "react-toastify";
 import Loader from "./defaults/Loader";
@@ -8,6 +8,7 @@ interface ProductProps {
   active: boolean;
   created_at: number;
   default_price: string;
+  productId: string;
   id: string;
   image: string;
   livemode: false;
@@ -25,12 +26,14 @@ interface NewProductProps {
   setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
   isEditActive?: boolean;
   editedProduct?: ProductProps;
+  fetchAllProducts: () => void
 }
 
 const NewProduct: FC<NewProductProps> = ({
   setIsOpen,
   isEditActive,
   editedProduct,
+  fetchAllProducts
 }) => {
   const [data, setData] = useState({
     name: "",
@@ -54,7 +57,6 @@ const NewProduct: FC<NewProductProps> = ({
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [pic, setPic] = useState<string>("");
-  const [prices, setPrices] = useState<{ [key: string]: number }>({});
 
   const handleButtonClick = () => {
     if (fileInputRef.current) {
@@ -134,6 +136,7 @@ const NewProduct: FC<NewProductProps> = ({
                   },
                 ]);
               if (!productError) {
+                fetchAllProducts()
                 console.log("Product added to supabase", product);
               } else {
                 console.log("error", productError);
@@ -241,28 +244,11 @@ const NewProduct: FC<NewProductProps> = ({
     }
   };
 
-  const getPrice = async () => {
-    await fetch("http://localhost:4000/fetch-prices", {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-      .then((response) => response.json())
-      .then((pricesData) => {
-        const pricesMap: { [key: string]: number } = {};
-        pricesData.forEach((price: { id: string; unit_amount: number }) => {
-          pricesMap[price.id] = price.unit_amount;
-        });
-        setPrices(pricesMap);
-      });
-  };
-
   const updateProduct = async () => {
     setLoading(true);
 
     const product = {
-      id: editedProduct?.id,
+      id: editedProduct?.productId,
       name: data.name ? data.name : editedProduct?.name,
       active: true,
       description: data.description
@@ -296,7 +282,7 @@ const NewProduct: FC<NewProductProps> = ({
                   updated: response.updated,
                 },
               ])
-              .eq("productId", editedProduct?.id);
+              .eq("productId", editedProduct?.productId);
             if (!productError) {
               console.log("Product updated", product);
             } else {
@@ -329,9 +315,6 @@ const NewProduct: FC<NewProductProps> = ({
     }
   };
 
-  useEffect(() => {
-    getPrice();
-  }, []);
 
   return (
     <div className="absolute top-0 w-[100%] bg-opacity-60 bg-[#ccc] flex h-screen z-50">
@@ -463,11 +446,7 @@ const NewProduct: FC<NewProductProps> = ({
                 type="number"
                 id="price"
                 placeholder={
-                  editedProduct
-                    ? `${(prices[editedProduct.default_price] / 100).toFixed(
-                        2
-                      )}`
-                    : ""
+                  editedProduct ? `${editedProduct.default_price}` : ""
                 }
                 value={data.price}
                 onChange={(e) => setData({ ...data, price: e.target.value })}
