@@ -6,10 +6,10 @@ import { supabase } from "../../utils/supabaseClient";
 
 interface ProductProps {
   active: boolean;
-  created: number;
+  created_at: number;
   default_price: string;
   id: string;
-  images: object[];
+  image: string;
   livemode: false;
   metadata: object;
   name: string;
@@ -293,6 +293,7 @@ const NewProduct: FC<NewProductProps> = ({
                   category: data.category
                     ? data.category
                     : editedProduct?.category,
+                  updated: response.updated,
                 },
               ])
               .eq("productId", editedProduct?.id);

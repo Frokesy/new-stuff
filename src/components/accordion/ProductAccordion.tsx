@@ -4,10 +4,10 @@ import { ToastContainer, toast } from "react-toastify";
 
 interface ProductsProps {
   active: boolean;
-  created: number;
+  created_at: number;
   default_price: string;
   id: string;
-  images: object[];
+  image: string;
   livemode: false;
   metadata: object;
   name: string;

@@ -4,13 +4,14 @@ import { FaCircle, FaPlus, FaSquare } from "react-icons/fa";
 import NewProduct from "../../components/NewProduct";
 import ProductAccordion from "../../components/accordion/ProductAccordion";
 import PageLoader from "../../components/defaults/PageLoader";
+import { supabase } from "../../../utils/supabaseClient";
 
 interface ProductsProps {
   active: boolean;
-  created: number;
+  created_at: number;
   default_price: string;
   id: string;
-  images: object[];
+  image: string;
   livemode: false;
   metadata: object;
   name: string;
@@ -19,21 +20,28 @@ interface ProductsProps {
   updated: string;
   description: string;
   category?: string;
-  estimatedDeliveryDays: number
+  estimatedDeliveryDays: number;
 }
 
 const ProductsCatalogue = () => {
   const [products, setProducts] = useState<ProductsProps[]>([]);
   const [editedProduct, setEditedProduct] = useState<ProductsProps>();
-  const [prices, setPrices] = useState<{ [key: string]: number }>({});
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [isEditActive, setEditActive] = useState<boolean>(false);
   const [showAccordion, setShowAccordion] = useState<boolean>(false);
   const [accordionId, setAccordionId] = useState("");
   const [loading, setLoading] = useState<boolean>(true);
 
-  const formatDate = (unixTimestamp: number) => {
-    const date = new Date(unixTimestamp * 1000);
+  const formatDate = (input: number | string | Date) => {
+    let date: Date;
+
+    if (typeof input === "number") {
+      date = new Date(input * 1000);
+    } else if (typeof input === "string") {
+      date = new Date(input);
+    } else {
+      date = input;
+    }
 
     const year = date.getFullYear();
     const month = (date.getMonth() + 1).toString().padStart(2, "0");
@@ -42,40 +50,18 @@ const ProductsCatalogue = () => {
     return `${year}-${month}-${day}`;
   };
 
-  const fetchPrices = async () => {
-    await fetch("http://localhost:4000/fetch-prices", {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-      .then((response) => response.json())
-      .then((pricesData) => {
-        const pricesMap: { [key: string]: number } = {};
-        pricesData.forEach((price: { id: string; unit_amount: number }) => {
-          pricesMap[price.id] = price.unit_amount;
-        });
-        setPrices(pricesMap);
-      });
-  };
-
   const fetchAllProducts = async () => {
-    await fetch("http://localhost:4000/fetch-products", {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-      .then((response) => response.json())
-      .then((productsData) => {
-        setLoading(false);
-        setProducts(productsData);
-      });
+    const { data, error } = await supabase.from("products").select("*");
+    if (!error) {
+      setLoading(false);
+      setProducts(data);
+    } else {
+      console.log("error", data);
+    }
   };
 
   useEffect(() => {
     fetchAllProducts();
-    fetchPrices();
   }, []);
 
   const activateAccordion = (id: string) => {
@@ -156,9 +142,9 @@ const ProductsCatalogue = () => {
                           className="cursor-pointer hover:text-[#3A5743] transition-all duration-500 ease-in-out text-[#8D9091] hover:text-semibold hover:bg-neutral-200"
                         >
                           <td className="px-3 whitespace-nowrap w-[10%] lg:text-[14px] text-[12px]">
-                            {item?.images[0] ? (
+                            {item?.image ? (
                               <img
-                                src={item?.images[0] as unknown as string}
+                                src={item.image}
                                 alt="img"
                                 className="w-[40px] h-[40px] object-cover"
                               />
@@ -173,19 +159,23 @@ const ProductsCatalogue = () => {
                             {item.name}
                           </td>
                           <td className="py-4 lg:text-[14px] w-[10%] text-[12px] font-medium text-left whitespace-nowrap">
-                            {prices[item.default_price]
-                              ? `£${(prices[item.default_price] / 100).toFixed(
-                                  2
-                                )}`
+                            {item.default_price
+                              ? `£${item.default_price}`
                               : "not set"}
                           </td>
                           <td className="py-4 lg:text-[14px] w-[10%] text-[12px] font-medium whitespace-nowrap">
-                            {formatDate(item.created)}
+                            {formatDate(item.created_at)}
                           </td>
                           <td className="py-4 lg:text-[14px] w-[10%] text-[12px] font-medium text-left whitespace-nowrap">
-                            {formatDate(parseInt(item.updated))}
+                            {item.updated == null
+                              ? "N/A"
+                              : formatDate(parseInt(item.updated))}
                           </td>
-                          <td className={`py-4 lg:text-[14px] text-[12px] font-medium text-left whitespace-nowrap ${item.active ? 'text-[#12e2a4]' : 'text-red-500'}`}>
+                          <td
+                            className={`py-4 lg:text-[14px] text-[12px] font-medium text-left whitespace-nowrap ${
+                              item.active ? "text-[#12e2a4]" : "text-red-500"
+                            }`}
+                          >
                             {item.active ? "active" : "inactive"}
                           </td>
                           <td className="px-6 text-[#333] lg:text-[14px] text-[12px] text-left whitespace-nowrap">
@@ -199,7 +189,10 @@ const ProductsCatalogue = () => {
                                 <FaCircle size={4} />
                               </div>
                               {showAccordion && accordionId === item.id && (
-                                <ProductAccordion item={item} handleClick={activateProductEdit} />
+                                <ProductAccordion
+                                  item={item}
+                                  handleClick={activateProductEdit}
+                                />
                               )}
                             </div>
                           </td>
@@ -213,7 +206,13 @@ const ProductsCatalogue = () => {
           )}
         </div>
         {isOpen && <NewProduct setIsOpen={setIsOpen} />}
-        {isEditActive && <NewProduct isEditActive={isEditActive} setIsOpen={setEditActive} editedProduct={editedProduct} />}
+        {isEditActive && (
+          <NewProduct
+            isEditActive={isEditActive}
+            setIsOpen={setEditActive}
+            editedProduct={editedProduct}
+          />
+        )}
       </div>
     </MainContainer>
   );
