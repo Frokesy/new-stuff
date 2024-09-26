@@ -206,7 +206,12 @@ const ProductsCatalogue = () => {
             </div>
           )}
         </div>
-        {isOpen && <NewProduct fetchAllProducts={fetchAllProducts} setIsOpen={setIsOpen} />}
+        {isOpen && (
+          <NewProduct
+            fetchAllProducts={fetchAllProducts}
+            setIsOpen={setIsOpen}
+          />
+        )}
         {isEditActive && (
           <NewProduct
             isEditActive={isEditActive}
