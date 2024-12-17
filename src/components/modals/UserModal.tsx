@@ -1,13 +1,7 @@
 import { FC } from "react";
 import ModalContainer from "../containers/ModalContainer";
+import { DataProps } from "../../pages/users";
 
-interface DataProps {
-  created_at: string;
-  email: string;
-  id: number;
-  name: string;
-  userId: string;
-}
 
 interface UserModalProps {
   isOpen: boolean;

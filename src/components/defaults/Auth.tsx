@@ -1,8 +1,8 @@
 import { useState } from "react";
 import Loader from "./Loader";
-import { supabase } from "../../../utils/supabaseClient";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { pb } from "../../../utils/pocketbaseClient"
 
 const Auth = () => {
   const [data, setData] = useState({
@@ -28,58 +28,56 @@ const Auth = () => {
 
   const handleLogin = async () => {
     setLoading(true);
+  
     setError({
       username: isUsernameValid ? "" : "Field is required",
       password: isPasswordValid ? "" : "Field is required",
     });
-
+  
     if (isUsernameValid && isPasswordValid) {
       try {
-        const { data: admin, error } = await supabase.from("admin").select("*");
-
-        console.log(error);
-        if (!error) {
-          setLoading(false);
-          const user = admin?.find(
-            (admin) =>
-              admin.username === data.username &&
-              admin.password === data.password
-          );
-          if (user) {
-            toast.success("Login successful", {
-              position: "top-center",
-              theme: "light",
-              autoClose: 2000,
-              hideProgressBar: true,
-              draggable: true,
-            });
-            const id = user.id;
-            localStorage.setItem("id", id);
-            setTimeout(() => {
-              window.location.href = "/dashboard";
-            }, 2000);
-          } else {
-            toast.error("Invalid username or password", {
-              position: "top-center",
-              theme: "light",
-              autoClose: 2000,
-              hideProgressBar: true,
-              draggable: true,
-            });
-          }
+        const admin = await pb
+        .collection("admin")
+        .authWithPassword(data.username, data.password);
+  
+        if (admin) {
+          toast.success("Login successful", {
+            position: "top-center",
+            theme: "light",
+            autoClose: 2000,
+            hideProgressBar: true,
+            draggable: true,
+          });
+  
+          const id = admin.record.id;
+          localStorage.setItem("id", id);
+  
+          setTimeout(() => {
+            window.location.href = "/dashboard";
+          }, 2000);
+        } else {
+          toast.error("Invalid username or password", {
+            position: "top-center",
+            theme: "light",
+            autoClose: 2000,
+            hideProgressBar: true,
+            draggable: true,
+          });
         }
       } catch (error) {
-        toast.error(error as string, {
+        toast.error(`Error: ${error}`, {
           position: "top-center",
           theme: "light",
           autoClose: 2000,
           hideProgressBar: true,
           draggable: true,
         });
+      } finally {
         setLoading(false);
       }
     } else {
       setLoading(false);
+  
       if (!isUsernameValid) {
         setTimeout(() => {
           setError((prevState) => ({ ...prevState, username: "" }));
@@ -92,6 +90,7 @@ const Auth = () => {
       }
     }
   };
+  
   return (
     <>
       <ToastContainer />

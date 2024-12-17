@@ -1,39 +1,25 @@
-import React, { FC, useRef, useState } from "react";
+import React, { FC, SetStateAction, useRef, useState } from "react";
 import { FaUpload } from "react-icons/fa";
 import { ToastContainer, toast } from "react-toastify";
 import Loader from "./defaults/Loader";
-import { supabase } from "../../utils/supabaseClient";
+import { pb } from "../../utils/pocketbaseClient";
+import { ProductsProps } from "../pages/products";
 
-interface ProductProps {
-  active: boolean;
-  created_at: number;
-  default_price: string;
-  productId: string;
-  id: string;
-  image: string;
-  livemode: false;
-  metadata: object;
-  name: string;
-  object: string;
-  type: string;
-  updated: string;
-  description: string;
-  category?: string;
-  estimatedDeliveryDays: number;
-}
 
 interface NewProductProps {
   setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
   isEditActive?: boolean;
-  editedProduct?: ProductProps;
-  fetchAllProducts: () => void
+  editedProduct?: ProductsProps;
+  fetchAllProducts: () => void;
+  setShowAccordion: React.Dispatch<SetStateAction<boolean>>
 }
 
 const NewProduct: FC<NewProductProps> = ({
   setIsOpen,
   isEditActive,
   editedProduct,
-  fetchAllProducts
+  fetchAllProducts,
+  setShowAccordion
 }) => {
   const [data, setData] = useState({
     name: "",
@@ -86,7 +72,8 @@ const NewProduct: FC<NewProductProps> = ({
 
   const createProduct = async () => {
     setLoading(true);
-    setError({
+  
+    const currentErrors = {
       name: isNameValid ? "" : "Field is required",
       description: isDescValid ? "" : "Field is required",
       price: isPriceValid ? "" : "Price must be set",
@@ -95,8 +82,27 @@ const NewProduct: FC<NewProductProps> = ({
       estimatedDeliveryDays: isDeliveryInputValid
         ? ""
         : "Estimated delivery days must be set",
-    });
-
+    };
+    setError(currentErrors);
+  
+    const isValidForm = Object.values(currentErrors).every((err) => err === "");
+  
+    if (!isValidForm) {
+      setLoading(false);
+      setTimeout(() =>
+        setError({
+          name: "",
+          description: "",
+          price: "",
+          image: "",
+          category: "",
+          estimatedDeliveryDays: "",
+        }), 
+        3000
+      );
+      return;
+    }
+  
     const product = {
       name: data.name,
       active: true,
@@ -107,97 +113,60 @@ const NewProduct: FC<NewProductProps> = ({
       },
       images: [pic],
     };
-
-    if (isNameValid && isPriceValid && isDescValid && error.image === "") {
-      try {
-        await fetch("http://localhost:4000/create-product", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ items: product }),
-        })
-          .then((response) => response.json())
-          .then(async (response) => {
-            if (response) {
-              const { data: product, error: productError } = await supabase
-                .from("products")
-                .insert([
-                  {
-                    name: data.name,
-                    active: true,
-                    desc: data.description,
-                    default_price: parseInt(data.price),
-                    image: pic,
-                    priceId: response.default_price,
-                    productId: response.id,
-                    category: data.category,
-                    estimatedDeliveryDays: data.estimatedDeliveryDays,
-                  },
-                ]);
-              if (!productError) {
-                fetchAllProducts()
-                console.log("Product added to supabase", product);
-              } else {
-                console.log("error", productError);
-              }
-            }
-
-            setLoading(false);
-
-            toast.success("Product added successfully!", {
-              position: "top-center",
-              theme: "light",
-              autoClose: 1500,
-              hideProgressBar: true,
-              draggable: true,
-            });
-            setTimeout(() => {
-              setIsOpen(false);
-            }, 3000);
-          });
-      } catch (error) {
-        toast.error(error as string, {
+  
+    try {
+      const response = await fetch("http://localhost:4000/create-product", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ items: product }),
+      }).then((res) => res.json());
+  
+      if (!response) {
+        throw new Error("Failed to create product in the external service.");
+      }
+    
+      const newProduct = {
+        name: data.name,
+        active: true,
+        desc: data.description,
+        default_price: parseInt(data.price),
+        image: pic,
+        priceId: response.default_price,
+        productId: response.id,
+        category: data.category,
+        estimatedDeliveryDays: data.estimatedDeliveryDays,
+      };
+  
+      const createdProduct = await pb.collection("products").create(newProduct);
+  
+      if (createdProduct) {
+        fetchAllProducts();
+  
+        toast.success("Product added successfully!", {
           position: "top-center",
           theme: "light",
-          autoClose: 2000,
+          autoClose: 1500,
           hideProgressBar: true,
           draggable: true,
         });
-        setLoading(false);
+  
+        setTimeout(() => setIsOpen(false), 3000);
       }
-    } else {
+    } catch (error) {
+      console.error("Error creating product:", error);
+  
+      toast.error("An error occurred", {
+        position: "top-center",
+        theme: "light",
+        autoClose: 2000,
+        hideProgressBar: true,
+        draggable: true,
+      });
+    } finally {
       setLoading(false);
-      if (!isNameValid) {
-        setTimeout(() => {
-          setError((prevState) => ({ ...prevState, name: "" }));
-        }, 3000);
-      }
-      if (!isDescValid) {
-        setTimeout(() => {
-          setError((prevState) => ({ ...prevState, description: "" }));
-        }, 3000);
-      }
-      if (!isPriceValid) {
-        setTimeout(() => {
-          setError((prevState) => ({ ...prevState, price: "" }));
-        }, 3000);
-      }
-      if (!isCategoryValid) {
-        setTimeout(() => {
-          setError((prevState) => ({ ...prevState, price: "" }));
-        }, 3000);
-      }
-      if (!isDeliveryInputValid) {
-        setTimeout(() => {
-          setError((prevState) => ({
-            ...prevState,
-            estimatedDeliveryDays: "",
-          }));
-        }, 3000);
-      }
     }
   };
+  
 
   const updatePic = (pics: File | undefined) => {
     if (pics === undefined) {
@@ -267,30 +236,27 @@ const NewProduct: FC<NewProductProps> = ({
         .then((response) => response.json())
         .then(async (response) => {
           if (response) {
-            const { data: product, error: productError } = await supabase
-              .from("products")
-              .update([
-                {
-                  name: data.name ? data.name : editedProduct?.name,
-                  active: true,
-                  desc: data.description
-                    ? data.description
-                    : editedProduct?.description,
-                  category: data.category
-                    ? data.category
-                    : editedProduct?.category,
-                  updated: response.updated,
-                },
-              ])
-              .eq("productId", editedProduct?.productId);
-            if (!productError) {
-              console.log("Product updated", product);
-            } else {
-              console.log("error", productError);
+            try {
+              const updatedData = {
+                name: data.name || editedProduct?.name,
+                active: true,
+                desc: data.description || editedProduct?.description,
+                category: data.category || editedProduct?.category,
+                updated: response.updated,
+              };
+          
+              const updatedProduct = await pb
+                .collection('products')
+                .update(editedProduct?.id as string, updatedData);
+          
+              console.log("Product updated", updatedProduct);
+            } catch (error) {
+              console.error("Error updating product:", error);
             }
           }
 
           setLoading(false);
+          setShowAccordion(false)
 
           toast.success("Product updated successfully!", {
             position: "top-center",

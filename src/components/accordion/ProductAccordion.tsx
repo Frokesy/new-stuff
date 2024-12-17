@@ -1,20 +1,7 @@
 import { motion } from "framer-motion";
 import { FC } from "react";
 import { ToastContainer, toast } from "react-toastify";
-
-interface ProductsProps {
-  active: boolean;
-  created_at: number;
-  default_price: string;
-  id: string;
-  image: string;
-  livemode: false;
-  metadata: object;
-  name: string;
-  object: string;
-  type: string;
-  updated: string;
-}
+import { ProductsProps } from "../../pages/products";
 
 interface AccordionProps {
   item: ProductsProps;

@@ -4,11 +4,11 @@ import { FaCircle, FaPlus, FaSquare } from "react-icons/fa";
 import NewProduct from "../../components/NewProduct";
 import ProductAccordion from "../../components/accordion/ProductAccordion";
 import PageLoader from "../../components/defaults/PageLoader";
-import { supabase } from "../../../utils/supabaseClient";
+import { pb } from "../../../utils/pocketbaseClient";
 
-interface ProductsProps {
+export interface ProductsProps {
   active: boolean;
-  created_at: number;
+  created: number;
   default_price: string;
   productId: string;
   id: string;
@@ -52,12 +52,12 @@ const ProductsCatalogue = () => {
   };
 
   const fetchAllProducts = async () => {
-    const { data, error } = await supabase.from("products").select("*");
-    if (!error) {
+    try {
+      const products = await pb.collection("products").getFullList();
       setLoading(false);
-      setProducts(data);
-    } else {
-      console.log("error", data);
+      setProducts(products as never as ProductsProps[]);
+    } catch (error) {
+      console.error("Error fetching products:", error);
     }
   };
 
@@ -66,7 +66,7 @@ const ProductsCatalogue = () => {
   }, []);
 
   const activateAccordion = (id: string) => {
-    setShowAccordion(true);
+    setShowAccordion(!showAccordion);
     setAccordionId(id);
   };
 
@@ -95,9 +95,9 @@ const ProductsCatalogue = () => {
             </div>
           ) : (
             <div className="">
-              <div className=" w-full inline-block align-middle">
-                <div className="overflow-x-auto border rounded-lg">
-                  <table className="min-w-full divide-y divide-gray-200 overflow-x-auto">
+              <div className="w-full">
+                <div className="border rounded-lg">
+                  <table className="min-w-full divide-y divide-gray-200">
                     <thead className="">
                       <tr>
                         <th
@@ -136,7 +136,7 @@ const ProductsCatalogue = () => {
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-200">
+                    <tbody className="divide-y divide-gray-200 border border-red-500">
                       {products.map((item) => (
                         <tr
                           key={item.id}
@@ -165,7 +165,7 @@ const ProductsCatalogue = () => {
                               : "not set"}
                           </td>
                           <td className="py-4 lg:text-[14px] w-[10%] text-[12px] font-medium whitespace-nowrap">
-                            {formatDate(item.created_at)}
+                            {formatDate(item.created)}
                           </td>
                           <td className="py-4 lg:text-[14px] w-[10%] text-[12px] font-medium text-left whitespace-nowrap">
                             {item.updated == null
@@ -210,6 +210,7 @@ const ProductsCatalogue = () => {
           <NewProduct
             fetchAllProducts={fetchAllProducts}
             setIsOpen={setIsOpen}
+            setShowAccordion={setShowAccordion}
           />
         )}
         {isEditActive && (
@@ -217,6 +218,7 @@ const ProductsCatalogue = () => {
             isEditActive={isEditActive}
             setIsOpen={setEditActive}
             editedProduct={editedProduct}
+            setShowAccordion={setShowAccordion}
             fetchAllProducts={fetchAllProducts}
           />
         )}

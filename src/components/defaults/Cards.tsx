@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { FaCheck, FaMoneyBill } from "react-icons/fa";
 import { FaPeopleGroup, FaShop } from "react-icons/fa6";
-import { supabase } from "../../../utils/supabaseClient";
 import PageLoader from "./PageLoader";
+import { pb } from "../../../utils/pocketbaseClient";
 
 interface OrderProps {
   id: number;
@@ -10,29 +10,31 @@ interface OrderProps {
   session_id: string;
   status: string;
   totalCost: string;
-  user_id: string
+  user_id: string;
 }
-
 
 const Cards = () => {
   const [data, setData] = useState({
     users: [],
     products: [],
     totalOrders: [] as OrderProps[],
-    completedOrders: [] as OrderProps[]
+    completedOrders: [] as OrderProps[],
   });
-  const totalRevenue = data.completedOrders.reduce((sum, order) => sum + parseInt(order.totalCost), 0);
-  
+  const totalRevenue = data.completedOrders.reduce(
+    (sum, order) => sum + parseInt(order.totalCost),
+    0
+  );
+
   const CardContent = [
     {
       title: "Total Products",
-      value: data.products.length,
+      value: data.products.length === 0 ? 0 : data.products.length,
       icon: <FaShop />,
       color: "#1B264F",
     },
     {
       title: "Total Users",
-      value: data.users.length,
+      value: data.users.length === 0 ? 0 : data.users.length,
       color: "#F7B32B",
       icon: <FaPeopleGroup />,
     },
@@ -44,19 +46,18 @@ const Cards = () => {
     },
     {
       title: "Orders (Completed)",
-      value: `${data.totalOrders.length} (${data.completedOrders.length})`,
+      value: `${data.totalOrders.length === 0 ? 0 : data.totalOrders.length} (${
+        data.completedOrders.length === 0 ? 0 : data.completedOrders.length
+      })`,
       icon: <FaCheck />,
       color: "#34252F",
     },
   ];
 
-
   const fetchAllProducts = async () => {
     try {
-      const { data: products, error } = await supabase.from("products").select("*");
-      if (error) {
-        throw error;
-      }
+      const products = await pb.collection("products").getFullList();
+
       setData((prevState) => ({
         ...prevState,
         products: products as never[],
@@ -68,33 +69,30 @@ const Cards = () => {
 
   const fetchOrders = async () => {
     try {
-      const { data: orders, error } = await supabase.from("orders").select("*");
-      if (error) {
-        throw error;
-      }
+      const orders = await pb.collection("orders").getFullList();
 
-      const completedOrders = orders.filter(order => order.status === "completed");
+      const completedOrders = orders.filter(
+        (order) => order.status === "completed"
+      );
 
       setData((prevState) => ({
         ...prevState,
-        completedOrders: completedOrders as OrderProps[],
+        completedOrders: completedOrders as unknown as OrderProps[],
       }));
 
       setData((prevState) => ({
         ...prevState,
-        totalOrders: orders as OrderProps[],
+        totalOrders: orders as unknown as OrderProps[],
       }));
     } catch (error) {
       console.error("Error fetching Orders:", error);
     }
-  }
+  };
 
   const fetchUsers = async () => {
     try {
-      const { data: users, error } = await supabase.from("users").select("*");
-      if (error) {
-        throw error;
-      }
+      const users = await pb.collection("users").getFullList();
+
       setData((prevState) => ({
         ...prevState,
         users: users as never[],
@@ -103,11 +101,14 @@ const Cards = () => {
       console.error("Error fetching users:", error);
     }
   };
+
   useEffect(() => {
     fetchAllProducts();
     fetchOrders();
     fetchUsers();
   }, []);
+
+  console.log(data);
 
   return (
     <div className="w-[100%] mx-auto">
