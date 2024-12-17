@@ -5,13 +5,12 @@ import Loader from "./defaults/Loader";
 import { pb } from "../../utils/pocketbaseClient";
 import { ProductsProps } from "../pages/products";
 
-
 interface NewProductProps {
   setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
   isEditActive?: boolean;
   editedProduct?: ProductsProps;
   fetchAllProducts: () => void;
-  setShowAccordion: React.Dispatch<SetStateAction<boolean>>
+  setShowAccordion: React.Dispatch<SetStateAction<boolean>>;
 }
 
 const NewProduct: FC<NewProductProps> = ({
@@ -19,7 +18,7 @@ const NewProduct: FC<NewProductProps> = ({
   isEditActive,
   editedProduct,
   fetchAllProducts,
-  setShowAccordion
+  setShowAccordion,
 }) => {
   const [data, setData] = useState({
     name: "",
@@ -72,7 +71,7 @@ const NewProduct: FC<NewProductProps> = ({
 
   const createProduct = async () => {
     setLoading(true);
-  
+
     const currentErrors = {
       name: isNameValid ? "" : "Field is required",
       description: isDescValid ? "" : "Field is required",
@@ -84,25 +83,26 @@ const NewProduct: FC<NewProductProps> = ({
         : "Estimated delivery days must be set",
     };
     setError(currentErrors);
-  
+
     const isValidForm = Object.values(currentErrors).every((err) => err === "");
-  
+
     if (!isValidForm) {
       setLoading(false);
-      setTimeout(() =>
-        setError({
-          name: "",
-          description: "",
-          price: "",
-          image: "",
-          category: "",
-          estimatedDeliveryDays: "",
-        }), 
+      setTimeout(
+        () =>
+          setError({
+            name: "",
+            description: "",
+            price: "",
+            image: "",
+            category: "",
+            estimatedDeliveryDays: "",
+          }),
         3000
       );
       return;
     }
-  
+
     const product = {
       name: data.name,
       active: true,
@@ -113,18 +113,18 @@ const NewProduct: FC<NewProductProps> = ({
       },
       images: [pic],
     };
-  
+
     try {
       const response = await fetch("http://localhost:4000/create-product", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ items: product }),
       }).then((res) => res.json());
-  
+
       if (!response) {
         throw new Error("Failed to create product in the external service.");
       }
-    
+
       const newProduct = {
         name: data.name,
         active: true,
@@ -136,12 +136,12 @@ const NewProduct: FC<NewProductProps> = ({
         category: data.category,
         estimatedDeliveryDays: data.estimatedDeliveryDays,
       };
-  
+
       const createdProduct = await pb.collection("products").create(newProduct);
-  
+
       if (createdProduct) {
         fetchAllProducts();
-  
+
         toast.success("Product added successfully!", {
           position: "top-center",
           theme: "light",
@@ -149,12 +149,12 @@ const NewProduct: FC<NewProductProps> = ({
           hideProgressBar: true,
           draggable: true,
         });
-  
+
         setTimeout(() => setIsOpen(false), 3000);
       }
     } catch (error) {
       console.error("Error creating product:", error);
-  
+
       toast.error("An error occurred", {
         position: "top-center",
         theme: "light",
@@ -166,7 +166,6 @@ const NewProduct: FC<NewProductProps> = ({
       setLoading(false);
     }
   };
-  
 
   const updatePic = (pics: File | undefined) => {
     if (pics === undefined) {
@@ -244,11 +243,11 @@ const NewProduct: FC<NewProductProps> = ({
                 category: data.category || editedProduct?.category,
                 updated: response.updated,
               };
-          
+
               const updatedProduct = await pb
-                .collection('products')
+                .collection("products")
                 .update(editedProduct?.id as string, updatedData);
-          
+
               console.log("Product updated", updatedProduct);
             } catch (error) {
               console.error("Error updating product:", error);
@@ -256,7 +255,7 @@ const NewProduct: FC<NewProductProps> = ({
           }
 
           setLoading(false);
-          setShowAccordion(false)
+          setShowAccordion(false);
 
           toast.success("Product updated successfully!", {
             position: "top-center",
@@ -280,7 +279,6 @@ const NewProduct: FC<NewProductProps> = ({
       setLoading(false);
     }
   };
-
 
   return (
     <div className="absolute top-0 w-[100%] bg-opacity-60 bg-[#ccc] flex h-screen z-50">
@@ -354,18 +352,23 @@ const NewProduct: FC<NewProductProps> = ({
               <span className="text-[12px] text-[#404040] pb-3">
                 Defines which category the product will be placed.
               </span>
-              <input
-                type="text"
+              <select
                 id="category"
-                placeholder={
-                  editedProduct ? editedProduct.category : "e.g cereals, fruits"
-                }
                 value={data.category}
                 onChange={(e) => setData({ ...data, category: e.target.value })}
-                className={`outline-none border border-[#ccc] w-[100%] rounded-lg py-2 px-3 ${
+                className={`outline-none border border-[#ccc] bg-[#fff] w-[100%] rounded-lg py-2 px-3 ${
                   error.category && "border-red-500"
                 }`}
-              />
+              >
+                <option value="" disabled>
+                  {editedProduct ? editedProduct.category : "Select a category"}
+                </option>
+                <option value="fruits">Fruits</option>
+                <option value="cereals">Cereals</option>
+                <option value="vegetables">Vegetables</option>
+                <option value="meat">Meat</option>
+                <option value="milk&dairy">Milk & Dairy</option>
+              </select>
               <span className="text-red-500 text-[10px] italic">
                 {error.category}
               </span>
