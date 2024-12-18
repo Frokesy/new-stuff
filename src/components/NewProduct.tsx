@@ -23,7 +23,7 @@ const NewProduct: FC<NewProductProps> = ({
   const [data, setData] = useState({
     name: "",
     active: true,
-    description: "",
+    desc: "",
     price: "",
     category: "",
     estimatedDeliveryDays: "",
@@ -31,12 +31,14 @@ const NewProduct: FC<NewProductProps> = ({
 
   const [error, setError] = useState({
     name: "",
-    description: "",
+    desc: "",
     price: "",
     image: "",
     category: "",
     estimatedDeliveryDays: "",
   });
+
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
   const [loading, setLoading] = useState<boolean>(false);
 
@@ -64,7 +66,7 @@ const NewProduct: FC<NewProductProps> = ({
   };
 
   const isNameValid = validateField(data.name);
-  const isDescValid = validateField(data.description);
+  const isDescValid = validateField(data.desc);
   const isPriceValid = validateField(data.price);
   const isCategoryValid = validateField(data.category);
   const isDeliveryInputValid = validateField(data.estimatedDeliveryDays);
@@ -74,7 +76,7 @@ const NewProduct: FC<NewProductProps> = ({
 
     const currentErrors = {
       name: isNameValid ? "" : "Field is required",
-      description: isDescValid ? "" : "Field is required",
+      desc: isDescValid ? "" : "Field is required",
       price: isPriceValid ? "" : "Price must be set",
       image: "",
       category: isCategoryValid ? "" : "Category must be set",
@@ -92,7 +94,7 @@ const NewProduct: FC<NewProductProps> = ({
         () =>
           setError({
             name: "",
-            description: "",
+            desc: "",
             price: "",
             image: "",
             category: "",
@@ -106,7 +108,7 @@ const NewProduct: FC<NewProductProps> = ({
     const product = {
       name: data.name,
       active: true,
-      description: data.description,
+      desc: data.desc,
       default_price_data: {
         currency: "GBP",
         unit_amount: parseInt(data.price) * 100,
@@ -115,7 +117,7 @@ const NewProduct: FC<NewProductProps> = ({
     };
 
     try {
-      const response = await fetch("http://localhost:4000/create-product", {
+      const response = await fetch(`${backendUrl}/create-product`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ items: product }),
@@ -128,7 +130,7 @@ const NewProduct: FC<NewProductProps> = ({
       const newProduct = {
         name: data.name,
         active: true,
-        desc: data.description,
+        desc: data.desc,
         default_price: parseInt(data.price),
         image: pic,
         priceId: response.default_price,
@@ -219,13 +221,11 @@ const NewProduct: FC<NewProductProps> = ({
       id: editedProduct?.productId,
       name: data.name ? data.name : editedProduct?.name,
       active: true,
-      description: data.description
-        ? data.description
-        : editedProduct?.description,
+      desc: data.desc ? data.desc : editedProduct?.desc,
     };
 
     try {
-      await fetch("http://localhost:4000/update-product", {
+      await fetch(`${backendUrl}/update-product`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -239,7 +239,7 @@ const NewProduct: FC<NewProductProps> = ({
               const updatedData = {
                 name: data.name || editedProduct?.name,
                 active: true,
-                desc: data.description || editedProduct?.description,
+                desc: data.desc || editedProduct?.desc,
                 category: data.category || editedProduct?.category,
                 updated: response.updated,
               };
@@ -248,22 +248,23 @@ const NewProduct: FC<NewProductProps> = ({
                 .collection("products")
                 .update(editedProduct?.id as string, updatedData);
 
-              console.log("Product updated", updatedProduct);
+              if (updatedProduct) {
+                setLoading(false);
+                setShowAccordion(false);
+
+                toast.success("Product updated successfully!", {
+                  position: "top-center",
+                  theme: "light",
+                  autoClose: 1500,
+                  hideProgressBar: true,
+                  draggable: true,
+                });
+              }
             } catch (error) {
               console.error("Error updating product:", error);
             }
           }
 
-          setLoading(false);
-          setShowAccordion(false);
-
-          toast.success("Product updated successfully!", {
-            position: "top-center",
-            theme: "light",
-            autoClose: 1500,
-            hideProgressBar: true,
-            draggable: true,
-          });
           setTimeout(() => {
             setIsOpen(false);
           }, 3000);
@@ -324,24 +325,22 @@ const NewProduct: FC<NewProductProps> = ({
 
             <div className="flex flex-col w-[100%] mt-6">
               <label htmlFor="name" className="font-semibold">
-                Description{!isEditActive && "(required)"}:
+                desc{!isEditActive && "(required)"}:
               </label>
               <span className="text-[12px] pb-3 text-[#404040]">
                 Appears at checkout, on the customer portal, and in quotes.
               </span>
               <textarea
                 id="desc"
-                placeholder={editedProduct ? editedProduct.description : ""}
-                value={data.description}
-                onChange={(e) =>
-                  setData({ ...data, description: e.target.value })
-                }
+                placeholder={editedProduct ? editedProduct.desc : ""}
+                value={data.desc}
+                onChange={(e) => setData({ ...data, desc: e.target.value })}
                 className={`outline-none border border-[#ccc] w-[100%] rounded-lg py-2 px-3 ${
-                  error.description && "border-red-500"
+                  error.desc && "border-red-500"
                 }`}
               />
               <span className="text-red-500 text-[10px] italic">
-                {error.description}
+                {error.desc}
               </span>
             </div>
 

@@ -108,7 +108,6 @@ const Cards = () => {
     fetchUsers();
   }, []);
 
-  console.log(data);
 
   return (
     <div className="w-[100%] mx-auto">

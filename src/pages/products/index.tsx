@@ -19,7 +19,7 @@ export interface ProductsProps {
   object: string;
   type: string;
   updated: string;
-  description: string;
+  desc: string;
   category?: string;
   estimatedDeliveryDays: number;
 }

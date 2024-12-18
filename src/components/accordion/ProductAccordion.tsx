@@ -10,12 +10,14 @@ interface AccordionProps {
 
 const ProductAccordion: FC<AccordionProps> = ({ item, handleClick }) => {
 
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
+
   const handleDelete = async () => {
     const ids = {
       priceId: item.default_price,
       productId: item.id,
     };
-    await fetch("http://localhost:4000/delete-product", {
+    await fetch(`${backendUrl}/delete-product`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
