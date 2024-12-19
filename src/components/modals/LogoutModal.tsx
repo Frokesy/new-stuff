@@ -2,7 +2,7 @@ import { FC, useState } from "react";
 import Loader from "../defaults/Loader.tsx";
 import ModalContainer from "../containers/ModalContainer.tsx";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "../../../utils/supabaseClient.ts";
+import { pb } from "../../../utils/pocketbaseClient.ts";
 
 interface ModalProps {
   isOpen: boolean;
@@ -14,16 +14,20 @@ const LogoutModal: FC<ModalProps> = ({ isOpen, setIsOpen }) => {
   const navigate = useNavigate();
 
   const handleLogout = async () => {
-    setLoading(true);
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      throw error.message;
-    }
-    if (!error) {
+    try {
+      setLoading(true);
+
+      pb.authStore.clear();
+
+      localStorage.removeItem("id");
+
       setLoading(false);
       setIsOpen(!isOpen);
-      localStorage.removeItem("id");
+
       navigate("/");
+    } catch (error) {
+      console.error("Error logging out:", error);
+      setLoading(false);
     }
   };
 
